@@ -1,0 +1,167 @@
+---
+---
+
+
+<div style="
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 3rem 1rem;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+">
+  <div style="
+    width: 100%;
+    max-width: 520px;
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    text-align: center;
+    position: relative;
+  ">
+    <div style="
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: white;
+      box-shadow: 0 10px 30px rgba(102,126,234,0.5);
+    ">📁</div>
+
+    <h1 style="color:#333; font-weight:700; font-size:1.8rem;">Upload Galeri</h1>
+    <p style="color:#666; margin-bottom:1.5rem;">Tarik gambar ke kotak atau pilih manual</p>
+
+    <!-- Drop Zone -->
+    <div id="dropZone" style="
+      border: 3px dashed #a5a5ff;
+      border-radius: 15px;
+      padding: 2rem;
+      cursor: pointer;
+      background: rgba(102,126,234,0.05);
+      transition: all 0.3s ease;
+    ">
+      <p id="dropText" style="margin:0; color:#666;">🖱️ Seret gambar ke sini atau klik untuk memilih</p>
+      <input type="file" id="fileInput" name="gambar" accept="image/*" style="display:none;" />
+    </div>
+
+    <!-- Progress Bar -->
+    <div id="progressContainer" style="display:none; margin-top:1.5rem;">
+      <div style="background:#e0e0e0; border-radius:10px; overflow:hidden; height:12px;">
+        <div id="progressBar" style="width:0%; height:100%; background:linear-gradient(135deg,#667eea,#764ba2); transition:width 0.2s;"></div>
+      </div>
+      <p id="progressText" style="margin-top:0.5rem; color:#444;">0%</p>
+      <button id="cancelBtn" style="
+        background: #ff4b5c;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        margin-top: 0.5rem;
+        cursor: pointer;
+        font-weight: 600;
+        display:none;
+      ">❌ Batalkan Upload</button>
+    </div>
+
+    <!-- Status -->
+    <div id="status" style="margin-top:1rem; font-weight:500;"></div>
+  </div>
+</div>
+
+<script is:inline>
+  const dropZone = document.getElementById("dropZone");
+  const fileInput = document.getElementById("fileInput");
+  const progressBar = document.getElementById("progressBar");
+  const progressText = document.getElementById("progressText");
+  const progressContainer = document.getElementById("progressContainer");
+  const status = document.getElementById("status");
+  const cancelBtn = document.getElementById("cancelBtn");
+  let currentRequest = null;
+
+  // highlight saat drag masuk
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.style.background = "rgba(118,75,162,0.1)";
+    dropZone.style.borderColor = "#764ba2";
+  });
+
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.style.background = "rgba(102,126,234,0.05)";
+    dropZone.style.borderColor = "#a5a5ff";
+  });
+
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.style.background = "rgba(102,126,234,0.05)";
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(file);
+  });
+
+  // klik manual
+  dropZone.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (file) handleFileUpload(file);
+  });
+
+  function handleFileUpload(file) {
+    if (!file) return;
+    status.textContent = "";
+    progressContainer.style.display = "block";
+    cancelBtn.style.display = "inline-block";
+    progressBar.style.width = "0%";
+    progressText.textContent = "0%";
+
+    const formData = new FormData();
+    formData.append("gambar", file);
+
+    currentRequest = new XMLHttpRequest();
+    currentRequest.open("POST", "http://localhost:3000/upload", true);
+
+    // update progress
+    currentRequest.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        progressBar.style.width = percent + "%";
+        progressText.textContent = percent + "%";
+      }
+    });
+
+    currentRequest.onload = () => {
+      cancelBtn.style.display = "none";
+      if (currentRequest.status === 200) {
+        const data = JSON.parse(currentRequest.responseText);
+        status.innerHTML = `✅ Berhasil upload!<br>Nama file: <b>${data.filename}</b>`;
+        window.dispatchEvent(new CustomEvent("imageUploaded"));
+        fileInput.value = "";
+      } else {
+        status.textContent = "❌ Upload gagal!";
+      }
+    };
+
+    currentRequest.onerror = () => {
+      cancelBtn.style.display = "none";
+      status.textContent = "⚠️ Terjadi error saat upload.";
+    };
+
+    // tombol batal
+    cancelBtn.onclick = () => {
+      if (currentRequest) {
+        currentRequest.abort();
+        status.textContent = "🚫 Upload dibatalkan.";
+        progressBar.style.width = "0%";
+        progressText.textContent = "0%";
+        cancelBtn.style.display = "none";
+      }
+    };
+
+    currentRequest.send(formData);
+  }
+</script>

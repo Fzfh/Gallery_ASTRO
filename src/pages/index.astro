@@ -1,0 +1,26 @@
+---
+import Navbar from "../components/navbar.astro";
+import Upload from "../components/upload.astro";
+import Gallery from "../components/gallery.astro";
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <title>AuraSite</title>
+    <style>
+      * {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <Navbar />
+    <main style="padding: 2rem; text-align:center;">
+      <h1>Selamat Datang di Website Galeri Guah</h1>
+	  <Upload />
+	  <hr style="margin:2rem 0;">
+  	<Gallery />
+    </main>
+  </body>
+</html>
