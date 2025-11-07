@@ -1,11 +1,26 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Navbar from "../components/navbar.astro";
+import Upload from "../components/upload.astro";
+import Gallery from "../components/gallery.astro";
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <title>AuraSite</title>
+    <style>
+      * {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <Navbar />
+    <main style="padding: 2rem; text-align:center;">
+      <h1>Selamat Datang di Website Galeri Guah</h1>
+	  <Upload />
+	  <hr style="margin:2rem 0;">
+  	<Gallery />
+    </main>
+  </body>
+</html>
